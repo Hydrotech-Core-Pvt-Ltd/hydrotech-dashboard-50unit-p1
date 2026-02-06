@@ -1,0 +1,33 @@
+export default function WaveSparkline({ data = [] }) {
+  // Fallback demo data if Firebase hasn't sent history yet
+  const values = data.length ? data : [8.5, 9.2, 7.8, 10.1, 8.9, 11.3, 9.5, 10.8, 8.2, 9.6];
+
+  const max = Math.max(...values);
+  const min = Math.min(...values);
+  const range = max - min || 1;
+
+  const points = values
+    .map((v, i) => {
+      const x = (i / (values.length - 1)) * 100;
+      const y = 40 - ((v - min) / range) * 35;
+      return `${x},${y}`;
+    })
+    .join(" ");
+
+  return (
+    <svg
+      viewBox="0 0 100 40"
+      className="w-full h-16"
+      preserveAspectRatio="none"
+    >
+      <polyline
+        fill="none"
+        stroke="rgba(52,211,153,0.8)"
+        strokeWidth="2.5"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        points={points}
+      />
+    </svg>
+  );
+}

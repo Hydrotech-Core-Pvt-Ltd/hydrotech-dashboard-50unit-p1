@@ -1,25 +1,23 @@
-import { Home, BarChart, Cpu, Settings, User, Droplets, LogOut } from "lucide-react";
+import { LayoutGrid, BarChart3, Monitor, Settings, User, Droplets, LogOut } from "lucide-react";
 
 const nav = [
-  { icon: Home, label: "Dashboard" },
-  { icon: BarChart, label: "Analytics" },
-  { icon: Cpu, label: "Devices" },
+  { icon: LayoutGrid, label: "Dashboard" },
+  { icon: BarChart3, label: "Analytics" },
+  { icon: Monitor, label: "Devices" },
   { icon: Settings, label: "Settings" },
-  { icon: User, label: "Profile" },
 ];
 
 export default function Sidebar() {
   const activeIndex = 0;
 
   return (
-    <aside className="h-screen w-72 bg-gradient-to-b from-[#0c1730] via-[#0b1428] to-[#0a1224] border-r border-white/10 px-6 py-7 flex flex-col">
+    <aside className="h-screen w-72 bg-linear-to-b from-[#0c1730] via-[#0b1428] to-[#0a1224] border-r border-white/10 px-6 py-7 flex flex-col">
       <div className="flex items-center gap-3 pb-6 border-b border-white/10">
-        <div className="h-12 w-12 rounded-2xl bg-emerald-500/10 border border-emerald-400/20 flex items-center justify-center shadow-[0_0_18px_rgba(16,185,129,0.35)]">
-          <Droplets className="text-emerald-300" size={24} />
+        <div className="h-12 w-12 rounded-2xl bg-cyan-500/10 border border-cyan-400/20 flex items-center justify-center shadow-[0_0_18px_rgba(34,211,238,0.35)]">
+          <Droplets className="text-cyan-300" size={24} />
         </div>
         <div>
-          <p className="text-lg font-semibold tracking-tight">HydroTech</p>
-          <p className="text-xs text-white/60">Control center</p>
+          <p className="text-lg font-semibold tracking-tight">HydroTect</p>
         </div>
       </div>
 
