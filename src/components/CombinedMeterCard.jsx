@@ -1,5 +1,5 @@
 import WaveSparkline from "./WaveSparkline";
-import { Droplets, Gauge, Clock } from "lucide-react";
+import { Droplets, Gauge, Clock, Zap, TimerReset } from "lucide-react";
 
 function fmt(v) {
   if (v === undefined || v === null) return "0";
@@ -11,25 +11,33 @@ export default function CombinedMeterCard({ meter }) {
   if (!meter) return null;
   const latestFlow = Array.isArray(meter.Flow_Rate) && meter.Flow_Rate.length ? meter.Flow_Rate[meter.Flow_Rate.length - 1] : Number(meter.Flow_Rate) || 0;
   const isNormal = meter.Status === "normal";
-  const updated = meter.Last_Updated ? new Date(meter.Last_Updated).toLocaleString() : "-";
-  const monthly = Number(meter.Monthly_Units || 0);
-  const total = Number(meter.Total_Units || 1);
-  const pct = Math.round(Math.min(100, (monthly / Math.max(1, total)) * 100));
+  const updated = meter.Timestamp ? new Date(Number(meter.Timestamp) * 1000).toLocaleString() : "-";
+  const dailyLiters = Number(meter.Daily_Liters || 0);
+  const totalM3 = Number(meter.Total_M3 || 0);
+  const hasHistory = Array.isArray(meter.history) && meter.history.length > 0;
+  const sparklineData = hasHistory
+    ? meter.history.map((item) => Number(item?.Flow_Rate ?? item?.flow_rate ?? item?.value)).filter((value) => Number.isFinite(value))
+    : meter.Flow_Rate;
 
   return (
-    <div className="bg-gradient-to-br from-[#071226] to-[#0f2740] rounded-2xl p-6 border border-white/6 shadow-lg">
+    <div className="relative overflow-hidden bg-gradient-to-br from-[#071226] via-[#0b1c31] to-[#0f2740] rounded-3xl p-6 border border-white/8 shadow-[0_20px_60px_rgba(0,0,0,0.35)]">
+      <div className="absolute inset-0 pointer-events-none opacity-30">
+        <div className="absolute -top-20 -right-20 h-56 w-56 rounded-full bg-cyan-500/15 blur-3xl" />
+        <div className="absolute -bottom-24 -left-20 h-56 w-56 rounded-full bg-sky-500/10 blur-3xl" />
+      </div>
+
       <div className="flex items-start justify-between gap-4 mb-4">
         <div>
           <div className="inline-flex items-center gap-3 mb-2">
-            <div className="h-11 w-11 flex items-center justify-center rounded-xl bg-cyan-500/10 border border-cyan-400/10">
+            <div className="h-12 w-12 flex items-center justify-center rounded-2xl bg-cyan-500/10 border border-cyan-400/10 shadow-inner shadow-cyan-500/10">
               <Droplets className="text-cyan-300" size={20} />
             </div>
             <div>
-              <div className="text-xs text-gray-400">Meter</div>
-              <div className="text-lg font-bold text-white">{meter.serialNumber || meter.Meter_ID}</div>
+              <div className="text-xs uppercase tracking-[0.25em] text-gray-400">Meter</div>
+              <div className="text-xl font-bold text-white">{meter.serialNumber || meter.Meter_ID}</div>
             </div>
           </div>
-          <div className="text-sm text-gray-400 flex items-center gap-2"><Clock size={14} /> Last: {updated}</div>
+          <div className="text-sm text-gray-400 flex items-center gap-2"><Clock size={14} /> Timestamp: {updated}</div>
         </div>
 
         <div className="text-right">
@@ -40,45 +48,47 @@ export default function CombinedMeterCard({ meter }) {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
-        <div className="col-span-1 md:col-span-1 bg-white/3 rounded-xl p-4">
-          <p className="text-xs text-gray-300">Flow Rate</p>
-          <div className="flex items-baseline gap-2">
-            <div className="text-3xl font-bold text-white">{fmt(latestFlow)}</div>
-            <div className="text-gray-400 text-sm">L/MIN</div>
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
+        <div className="md:col-span-1 rounded-2xl border border-white/6 bg-white/4 p-4">
+          <div className="flex items-center gap-2 text-xs uppercase tracking-[0.2em] text-gray-400 mb-3"><Zap size={14} /> Flow Rate</div>
+          <div className="flex items-end gap-2">
+            <div className="text-4xl font-semibold text-white leading-none">{fmt(latestFlow)}</div>
+            <div className="text-gray-400 text-sm pb-1">L/MIN</div>
           </div>
         </div>
 
-        <div className="col-span-1 md:col-span-1 bg-white/3 rounded-xl p-4">
-          <p className="text-xs text-gray-300">Pressure</p>
-          <div className="flex items-baseline gap-2">
-            <div className="text-3xl font-bold text-white">{fmt(meter.Pressure)}</div>
-            <div className="text-gray-400 text-sm">BAR</div>
+        <div className="md:col-span-1 rounded-2xl border border-white/6 bg-white/4 p-4">
+          <div className="flex items-center gap-2 text-xs uppercase tracking-[0.2em] text-gray-400 mb-3"><Gauge size={14} /> Pressure</div>
+          <div className="flex items-end gap-2">
+            <div className="text-4xl font-semibold text-white leading-none">{fmt(meter.Pressure)}</div>
+            <div className="text-gray-400 text-sm pb-1">BAR</div>
           </div>
         </div>
 
-        <div className="col-span-1 md:col-span-1 bg-white/3 rounded-xl p-4 flex flex-col justify-between">
-          <p className="text-xs text-gray-300">Total Units</p>
-          <div className="flex items-baseline gap-2">
-            <div className="text-3xl font-bold text-white">{fmt(meter.Total_Units)}</div>
+        <div className="md:col-span-1 rounded-2xl border border-white/6 bg-white/4 p-4">
+          <div className="flex items-center gap-2 text-xs uppercase tracking-[0.2em] text-gray-400 mb-3"><TimerReset size={14} /> Daily Liters</div>
+          <div className="flex items-end gap-2">
+            <div className="text-4xl font-semibold text-white leading-none">{fmt(dailyLiters)}</div>
+            <div className="text-gray-400 text-sm pb-1">L</div>
           </div>
-          <div className="mt-3">
-            <div className="text-xs text-gray-400 mb-2">Monthly usage</div>
-            <div className="w-full bg-white/6 rounded-full h-2 overflow-hidden">
-              <div className="h-2 bg-cyan-400" style={{ width: `${pct}%` }} />
-            </div>
-            <div className="text-xs text-gray-300 mt-2">{fmt(monthly)} / {fmt(total)} ({pct}%)</div>
+        </div>
+
+        <div className="md:col-span-1 rounded-2xl border border-white/6 bg-white/4 p-4">
+          <p className="text-xs uppercase tracking-[0.2em] text-gray-400 mb-3">Total M3</p>
+          <div className="flex items-end gap-2">
+            <div className="text-4xl font-semibold text-white leading-none">{fmt(totalM3)}</div>
+            <div className="text-gray-400 text-sm pb-1">m³</div>
           </div>
         </div>
       </div>
 
       <div className="mt-2 bg-transparent rounded-lg p-2">
         <div className="mb-2">
-          <WaveSparkline data={meter.Flow_Rate} />
+          <WaveSparkline data={sparklineData} />
         </div>
         <div className="flex items-center justify-between text-sm text-gray-400">
-          <div className="flex items-center gap-2"><Gauge size={16} /> <span>Flow trend</span></div>
-          <div>Daily: <span className="text-white ml-1">{fmt(meter.Daily_consumption)}</span></div>
+          <div className="flex items-center gap-2"><Gauge size={16} /> <span>Latest readings</span></div>
+          <div>History points: <span className="text-white ml-1">{Array.isArray(sparklineData) ? sparklineData.length : 0}</span></div>
         </div>
       </div>
     </div>

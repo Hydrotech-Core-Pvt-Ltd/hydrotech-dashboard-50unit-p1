@@ -71,30 +71,41 @@ export default function useMeters() {
 
   useEffect(() => {
     try {
-      // Subscribe to the meter root and handle different nested shapes.
-      const path = "/meters/GM-001";
+      // Subscribe to the new meter root and handle nested latest/history shapes.
+      const path = "/Meters/METER_001";
       const r = dbRef(realtimeDb, path);
       const off = onValue(r, (snapshot) => {
         const root = snapshot.val();
         console.log("Realtime snapshot for", path, root);
         if (!root) return;
 
-        // Prefer readings.current, then readings, then root fields
-        const data = root.readings?.current ?? root.readings ?? root;
+        // Prefer latest, then history.latest, then root fields.
+        const data = root.latest ?? root.history?.latest ?? root;
+
+        const historySource = root.history ?? data.history ?? [];
+        const flowSeries = Array.isArray(historySource)
+          ? historySource
+              .map((item) => Number(item?.Flow_Rate ?? item?.flow_rate ?? item?.value))
+              .filter((value) => Number.isFinite(value))
+          : Array.isArray(data.Flow_Rate)
+            ? data.Flow_Rate.map((value) => Number(value)).filter((value) => Number.isFinite(value))
+            : [];
 
         const mapped = [{
-          id: "GM-001",
-          Meter_ID: data.serialNumber || root.serialNumber || "GM-001",
+          id: "METER_001",
+          Meter_ID: root.serialNumber || data.serialNumber || "METER_001",
           Apartment: "",
-          Status: (data.isActive ?? root.isActive) ? "normal" : "alert",
-          Flow_Rate: Array.isArray(data.Flow_Rate) ? data.Flow_Rate : (data.Flow_Rate !== undefined ? [Number(data.Flow_Rate) || 0] : []),
+          Status: (data.isActive ?? root.isActive ?? true) ? "normal" : "alert",
+          Flow_Rate: flowSeries.length
+            ? flowSeries
+            : (data.Flow_Rate !== undefined ? [Number(data.Flow_Rate) || 0] : []),
           Pressure: data.Pressure ?? root.Pressure ?? 0,
-          Total_Units: data.Total_Units ?? root.Total_Units ?? 0,
-          Daily_consumption: data.Daily_consumption ?? root.Daily_consumption ?? 0,
-          Monthly_Units: data.Monthly_Units ?? root.Monthly_Units ?? 0,
-          Last_Updated: data.Last_Updated ?? root.Last_Updated ?? root.Last_Updated ?? "",
+          Daily_Liters: data.Daily_Liters ?? root.Daily_Liters ?? 0,
+          Total_M3: data.Total_M3 ?? root.Total_M3 ?? 0,
+          Timestamp: data.Timestamp ?? root.Timestamp ?? "",
+          history: historySource,
           isActive: data.isActive ?? root.isActive ?? true,
-          serialNumber: data.serialNumber ?? root.serialNumber ?? "GM-001"
+          serialNumber: data.serialNumber ?? root.serialNumber ?? "METER_001"
         }];
 
         console.log("Mapped realtime meter:", mapped[0]);
