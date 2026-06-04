@@ -5,6 +5,7 @@ import { db } from "../config/firebase";
 export default function useUser(uid) {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
     if (!uid) {
@@ -22,11 +23,12 @@ export default function useUser(uid) {
       setLoading(false);
     }, (error) => {
       console.error("Error fetching user:", error);
+      setError(error);
       setLoading(false);
     });
 
     return unsubscribe;
   }, [uid]);
 
-  return { user, loading };
+  return { user, loading, error };
 }

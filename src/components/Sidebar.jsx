@@ -7,8 +7,7 @@ const nav = [
   { icon: Settings, label: "Settings" },
 ];
 
-export default function Sidebar({ user, onLogout }) {
-  const activeIndex = 0;
+export default function Sidebar({ user, onLogout, activeIndex = 0, onNavigate = () => {} }) {
 
   return (
     <aside className="h-screen w-72 bg-linear-to-b from-[#0c1730] via-[#0b1428] to-[#0a1224] border-r border-white/10 px-6 py-7 flex flex-col">
@@ -27,6 +26,7 @@ export default function Sidebar({ user, onLogout }) {
             <li key={label}>
               <button
                 type="button"
+                onClick={() => onNavigate(index)}
                 className={`w-full flex items-center gap-4 rounded-2xl px-4 py-3 text-left transition ${
                   index === activeIndex
                     ? "bg-cyan-500/15 text-cyan-200 shadow-[0_0_16px_rgba(34,211,238,0.18)]"
