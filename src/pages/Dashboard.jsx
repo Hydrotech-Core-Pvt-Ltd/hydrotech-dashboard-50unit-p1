@@ -115,8 +115,10 @@ export default function Dashboard({ uid }) {
 
             <div>
               <h2 className="text-xl font-semibold text-white mb-4">Meter Readings</h2>
-              <div className="grid grid-cols-1 gap-6 max-w-5xl">
-                <CombinedMeterCard meter={filteredMeters[0] || meters[0]} />
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-5xl">
+                {(filteredMeters.length ? filteredMeters : meters).map((m) => (
+                  <CombinedMeterCard key={m.id} meter={m} />
+                ))}
               </div>
             </div>
           </>

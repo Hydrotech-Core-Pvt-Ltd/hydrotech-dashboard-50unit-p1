@@ -7,13 +7,29 @@ function fmt(v) {
   return String(v);
 }
 
+function fmtNumber(v, dp = 5) {
+  const n = Number(v);
+  if (!Number.isFinite(n)) return "0";
+  const s = n.toFixed(dp).replace(/\.0+$|(?<=\.[0-9]*?)0+$/g, "");
+  return s;
+}
+
+// Scale font down based on digit count — always shows full number
+function numSizeClass(str) {
+  if (str.length <= 3)  return "text-3xl md:text-4xl";
+  if (str.length <= 5)  return "text-2xl md:text-3xl";
+  if (str.length <= 7)  return "text-xl md:text-2xl";
+  if (str.length <= 9)  return "text-lg md:text-xl";
+  return "text-sm md:text-base";
+}
+
 export default function CombinedMeterCard({ meter }) {
   if (!meter) return null;
   const latestFlow = Array.isArray(meter.Flow_Rate) && meter.Flow_Rate.length ? meter.Flow_Rate[meter.Flow_Rate.length - 1] : Number(meter.Flow_Rate) || 0;
   const isNormal = meter.Status === "normal";
   const updated = meter.Timestamp ? new Date(Number(meter.Timestamp) * 1000).toLocaleString() : "-";
-  const dailyLiters = Number(meter.Daily_Liters || 0);
-  const totalM3 = Number(meter.Total_M3 || 0);
+  const dailyLiters = Number(meter.Daily_Liters ?? 0);
+  const totalM3 = Number(meter.Total_M3 ?? 0);
   const hasHistory = Array.isArray(meter.history) && meter.history.length > 0;
   const sparklineData = hasHistory
     ? meter.history.map((item) => Number(item?.Flow_Rate ?? item?.flow_rate ?? item?.value)).filter((value) => Number.isFinite(value))
@@ -26,6 +42,7 @@ export default function CombinedMeterCard({ meter }) {
         <div className="absolute -bottom-24 -left-20 h-56 w-56 rounded-full bg-sky-500/10 blur-3xl" />
       </div>
 
+      {/* Header */}
       <div className="flex items-start justify-between gap-4 mb-4">
         <div>
           <div className="inline-flex items-center gap-3 mb-2">
@@ -33,7 +50,7 @@ export default function CombinedMeterCard({ meter }) {
               <Droplets className="text-cyan-300" size={20} />
             </div>
             <div>
-              <div className="text-xs uppercase tracking-[0.25em] text-gray-400">Meter</div>
+              <div className="text-xs uppercase font-medium tracking-[0.25em] text-gray-400">Meter</div>
               <div className="text-xl font-bold text-white">{meter.serialNumber || meter.Meter_ID}</div>
             </div>
           </div>
@@ -48,42 +65,46 @@ export default function CombinedMeterCard({ meter }) {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
-        <div className="md:col-span-1 rounded-2xl border border-white/6 bg-white/4 p-4">
-          <div className="flex items-center gap-2 text-xs uppercase tracking-[0.2em] text-gray-400 mb-3"><Zap size={14} /> Flow Rate</div>
-          <div className="flex items-end gap-2">
-            <div className="text-4xl font-semibold text-white leading-none">{fmt(latestFlow)}</div>
-            <div className="text-gray-400 text-sm pb-1">L/MIN</div>
-          </div>
-        </div>
+      {/* Stats grid — flat, no nesting */}
+         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-2 gap-6 mb-4">
+        {(() => {
+          const flowStr = fmt(latestFlow);
+          const pressureStr = fmt(meter.Pressure);
+          const dailyStr = fmtNumber(dailyLiters, 5);
+          const totalStr = fmtNumber(totalM3, 5);
+          return (
+            <>
+                 <div className="h-36 md:h-44 rounded-2xl border border-white/6 bg-white/4 flex flex-col items-center justify-center gap-3 p-6 overflow-hidden">
+                <div className="text-xs uppercase font-medium tracking-normal text-gray-400 text-center">Flow Rate</div>
+                <div className={`${numSizeClass(flowStr)} font-semibold text-white w-full text-center`}>{flowStr}</div>
+                <div className="text-gray-300 text-xs">L/MIN</div>
+              </div>
 
-        <div className="md:col-span-1 rounded-2xl border border-white/6 bg-white/4 p-4">
-          <div className="flex items-center gap-2 text-xs uppercase tracking-[0.2em] text-gray-400 mb-3"><Gauge size={14} /> Pressure</div>
-          <div className="flex items-end gap-2">
-            <div className="text-4xl font-semibold text-white leading-none">{fmt(meter.Pressure)}</div>
-            <div className="text-gray-400 text-sm pb-1">BAR</div>
-          </div>
-        </div>
+                 <div className="h-36 md:h-44 rounded-2xl border border-white/6 bg-white/4 flex flex-col items-center justify-center gap-3 p-6 overflow-hidden">
+                <div className="text-xs uppercase font-medium tracking-normal text-gray-400 text-center">Pressure</div>
+                <div className={`${numSizeClass(pressureStr)} font-semibold text-white w-full text-center`}>{pressureStr}</div>
+                <div className="text-gray-300 text-xs">BAR</div>
+              </div>
 
-        <div className="md:col-span-1 rounded-2xl border border-white/6 bg-white/4 p-4">
-          <div className="flex items-center gap-2 text-xs uppercase tracking-[0.2em] text-gray-400 mb-3"><TimerReset size={14} /> Daily Liters</div>
-          <div className="flex items-end gap-2">
-            <div className="text-4xl font-semibold text-white leading-none">{fmt(dailyLiters)}</div>
-            <div className="text-gray-400 text-sm pb-1">L</div>
-          </div>
-        </div>
+                 <div className="h-36 md:h-44 rounded-2xl border border-white/6 bg-white/4 flex flex-col items-center justify-center gap-3 p-6 overflow-hidden">
+                <div className="text-xs uppercase font-medium tracking-normal text-gray-400 text-center">Daily Liters</div>
+                <div className={`${numSizeClass(dailyStr)} font-semibold text-cyan-300 w-full text-center`}>{dailyStr}</div>
+                <div className="text-gray-300 text-xs">L</div>
+              </div>
 
-        <div className="md:col-span-1 rounded-2xl border border-white/6 bg-white/4 p-4">
-          <p className="text-xs uppercase tracking-[0.2em] text-gray-400 mb-3">Total M3</p>
-          <div className="flex items-end gap-2">
-            <div className="text-4xl font-semibold text-white leading-none">{fmt(totalM3)}</div>
-            <div className="text-gray-400 text-sm pb-1">m³</div>
-          </div>
-        </div>
+                 <div className="h-36 md:h-44 rounded-2xl border border-white/6 bg-white/4 flex flex-col items-center justify-center gap-3 p-6 overflow-hidden">
+                <div className="text-xs uppercase font-medium tracking-normal text-gray-400 text-center">Total M3</div>
+                <div className={`${numSizeClass(totalStr)} font-semibold text-white w-full text-center`}>{totalStr}</div>
+                <div className="text-gray-300 text-xs">m³</div>
+              </div>
+            </>
+          );
+        })()}
       </div>
 
-      <div className="mt-2 bg-transparent rounded-lg p-2">
-        <div className="mb-2">
+      {/* Sparkline */}
+      <div className="bg-transparent rounded-lg p-4">
+        <div className="mb-3">
           <WaveSparkline data={sparklineData} />
         </div>
         <div className="flex items-center justify-between text-sm text-gray-400">
