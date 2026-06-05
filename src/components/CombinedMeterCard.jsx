@@ -1,4 +1,5 @@
 import WaveSparkline from "./WaveSparkline";
+import { useState } from "react";
 import { Droplets, Gauge, Clock, Zap, TimerReset } from "lucide-react";
 
 function fmt(v) {
@@ -23,8 +24,59 @@ function numSizeClass(str) {
   return "text-sm md:text-base";
 }
 
+function getSeriesFromHistory(history = [], keys = []) {
+  if (!Array.isArray(history)) return [];
+  return history
+    .map((item) => {
+      if (item == null) return null;
+      for (const k of keys) {
+        // direct key
+        if (item[k] != null) return Number(item[k]);
+        // lowercase key
+        if (item[k.toLowerCase()] != null) return Number(item[k.toLowerCase()]);
+        // nested readings.current
+        if (item.readings && item.readings.current && item.readings.current[k] != null) return Number(item.readings.current[k]);
+        if (item.readings && item.readings.current && item.readings.current[k.toLowerCase()] != null) return Number(item.readings.current[k.toLowerCase()]);
+        // nested readings
+        if (item.readings && item.readings[k] != null) return Number(item.readings[k]);
+        // value field
+        if (item.value != null) return Number(item.value);
+        // nested measurement in a generic field
+        if (item.measurement != null && item.measurement[k] != null) return Number(item.measurement[k]);
+      }
+      return null;
+    })
+    .filter((v) => Number.isFinite(v));
+}
+
 export default function CombinedMeterCard({ meter }) {
+  const [copied, setCopied] = useState(false);
+  const [expanded, setExpanded] = useState(() => Array.isArray(meter?.history) && meter.history.length > 0);
+
   if (!meter) return null;
+
+  function copyHistoryPath() {
+    const id = meter.Meter_ID || meter.serialNumber || meter.id || 'METER_UNKNOWN';
+    const path = `Meters/${id}/history`;
+    if (navigator && navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(path).then(() => {
+        setCopied(true);
+        setTimeout(() => setCopied(false), 2000);
+      }).catch(() => {
+        // fallback
+        // eslint-disable-next-line no-alert
+        window.prompt('Copy history path', path);
+      });
+    } else {
+      // fallback for older browsers
+      // eslint-disable-next-line no-alert
+      window.prompt('Copy history path', path);
+    }
+  }
+
+  function toggleExpanded() {
+    setExpanded((s) => !s);
+  }
   const latestFlow = Array.isArray(meter.Flow_Rate) && meter.Flow_Rate.length ? meter.Flow_Rate[meter.Flow_Rate.length - 1] : Number(meter.Flow_Rate) || 0;
   const isNormal = meter.Status === "normal";
   const updated = meter.Timestamp ? new Date(Number(meter.Timestamp) * 1000).toLocaleString() : "-";
@@ -32,8 +84,8 @@ export default function CombinedMeterCard({ meter }) {
   const totalM3 = Number(meter.Total_M3 ?? 0);
   const hasHistory = Array.isArray(meter.history) && meter.history.length > 0;
   const sparklineData = hasHistory
-    ? meter.history.map((item) => Number(item?.Flow_Rate ?? item?.flow_rate ?? item?.value)).filter((value) => Number.isFinite(value))
-    : meter.Flow_Rate;
+    ? getSeriesFromHistory(meter.history, ["Flow_Rate", "flow_rate", "value"]) 
+    : (Array.isArray(meter.Flow_Rate) ? meter.Flow_Rate : (meter.Flow_Rate !== undefined ? [Number(meter.Flow_Rate) || 0] : []));
 
   return (
     <div className="relative overflow-hidden bg-gradient-to-br from-[#071226] via-[#0b1c31] to-[#0f2740] rounded-3xl p-6 border border-white/8 shadow-[0_20px_60px_rgba(0,0,0,0.35)]">
@@ -102,15 +154,58 @@ export default function CombinedMeterCard({ meter }) {
         })()}
       </div>
 
-      {/* Sparkline */}
+      {/* Sparkline + per-metric history */}
       <div className="bg-transparent rounded-lg p-4">
         <div className="mb-3">
           <WaveSparkline data={sparklineData} />
         </div>
-        <div className="flex items-center justify-between text-sm text-gray-400">
-          <div className="flex items-center gap-2"><Gauge size={16} /> <span>Latest readings</span></div>
-          <div>History points: <span className="text-white ml-1">{Array.isArray(sparklineData) ? sparklineData.length : 0}</span></div>
-        </div>
+
+        {hasHistory && (
+          <>
+            <div className="flex items-center gap-3 mt-4">
+              <button onClick={toggleExpanded} className="inline-flex items-center gap-2 px-3 py-1 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white text-sm">
+                {expanded ? 'Hide graphs' : 'View graphs'}
+              </button>
+              <button onClick={copyHistoryPath} className="inline-flex items-center gap-2 px-3 py-1 rounded-lg bg-sky-600 hover:bg-sky-500 text-white text-sm">
+                Copy history path
+              </button>
+              {copied && <span className="ml-3 text-emerald-300 text-sm">Copied!</span>}
+            </div>
+
+            {expanded && (
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
+                <div className="p-3 bg-white/4 rounded-lg">
+                  <div className="text-xs text-gray-400 mb-2">Flow Rate</div>
+                  <WaveSparkline data={getSeriesFromHistory(meter.history, ["Flow_Rate", "flow_rate", "value"]) } className="w-full h-36" height={36} />
+                </div>
+
+                <div className="p-3 bg-white/4 rounded-lg">
+                  <div className="text-xs text-gray-400 mb-2">Pressure</div>
+                  <WaveSparkline data={getSeriesFromHistory(meter.history, ["Pressure", "pressure"]) } className="w-full h-36" height={36} />
+                </div>
+
+                <div className="p-3 bg-white/4 rounded-lg">
+                  <div className="text-xs text-gray-400 mb-2">Daily Consumption</div>
+                  <WaveSparkline data={getSeriesFromHistory(meter.history, ["Daily_consumption","Daily_Liters","daily_liters"]) } className="w-full h-36" height={36} />
+                </div>
+              </div>
+            )}
+
+          </>
+        )}
+
+        {!hasHistory && (
+          <div className="mt-3 flex items-center justify-between">
+            <div>
+              <button onClick={copyHistoryPath} className="inline-flex items-center gap-2 px-3 py-1 rounded-lg bg-sky-600 hover:bg-sky-500 text-white text-sm">
+                Copy history path
+              </button>
+              {copied && <span className="ml-3 text-emerald-300 text-sm">Copied!</span>}
+            </div>
+
+            <div className="text-sm text-gray-400">History points: <span className="text-white ml-1">{Array.isArray(sparklineData) ? sparklineData.length : 0}</span></div>
+          </div>
+        )}
       </div>
     </div>
   );
