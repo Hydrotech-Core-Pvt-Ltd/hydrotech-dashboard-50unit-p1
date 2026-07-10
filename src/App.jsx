@@ -5,12 +5,12 @@ import Login from "./pages/Login";
 import Dashboard from "./pages/Dashboard";
 
 function App() {
-  const [uid, setUid] = useState(null);
+  const [authUser, setAuthUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
-      setUid(user ? user.uid : null);
+      setAuthUser(user ? { uid: user.uid, email: user.email || "" } : null);
       setLoading(false);
     });
 
@@ -25,7 +25,7 @@ function App() {
     );
   }
 
-  return uid ? <Dashboard uid={uid} /> : <Login onLogin={setUid} />;
+  return authUser ? <Dashboard authUser={authUser} /> : <Login onLogin={setAuthUser} />;
 }
 
 export default App;

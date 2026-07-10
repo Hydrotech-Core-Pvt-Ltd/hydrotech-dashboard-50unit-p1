@@ -15,7 +15,7 @@ export default function Analytics() {
       <div className="flex items-center justify-between mb-6">
         <div>
           <h1 className="text-3xl font-bold text-white">Analytics</h1>
-          <p className="text-gray-400 text-sm">Simple usage stats and trends (dummy data)</p>
+          <p className="text-gray-400 text-sm">Simple usage stats and trends</p>
         </div>
         <div className="text-white/60 flex items-center gap-3">
           <Calendar size={18} />

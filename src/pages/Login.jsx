@@ -15,7 +15,10 @@ export default function Login({ onLogin }) {
     setError("");
     try {
       const userCredential = await signInWithEmailAndPassword(auth, email, password);
-      onLogin(userCredential.user.uid);
+      onLogin({
+        uid: userCredential.user.uid,
+        email: userCredential.user.email || email,
+      });
     } catch (err) {
       setError(err.message);
     } finally {

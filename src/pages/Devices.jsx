@@ -1,27 +1,30 @@
 import { Wifi, ToggleRight, Circle } from "lucide-react";
 
 export default function Devices({ meters = [] }) {
-  // Create dummy devices from meters if provided, otherwise sample list
-  const list = meters.length
-    ? meters.slice(0, 6).map((m, i) => ({ id: m.id || i, name: m.Meter_ID || `Meter-${i+1}`, status: m.Valve_Status ? "online" : "offline" }))
-    : [
-        { id: 1, name: "Meter-101", status: "online" },
-        { id: 2, name: "Meter-102", status: "offline" },
-        { id: 3, name: "Meter-103", status: "online" },
-      ];
+  const list = meters.map((m, i) => ({
+    id: m.id || i,
+    name: m.Meter_ID || m.serialNumber || `Meter-${i + 1}`,
+    status: m.Valve_Status ? "online" : "offline",
+  }));
 
   return (
     <div>
       <div className="flex items-center justify-between mb-6">
         <div>
           <h1 className="text-3xl font-bold text-white">Devices</h1>
-          <p className="text-gray-400 text-sm">List of connected meters (dummy data)</p>
+          <p className="text-gray-400 text-sm">List of connected meters from RTDB</p>
         </div>
         <div className="text-white/60 flex items-center gap-3">
           <Wifi size={18} />
           <span className="text-sm">{list.filter(d => d.status === "online").length} online</span>
         </div>
       </div>
+
+      {!list.length && (
+        <div className="rounded-2xl border border-white/10 bg-[#0f1e36]/40 p-6 text-gray-400 text-sm">
+          No meters available.
+        </div>
+      )}
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {list.map((d) => (

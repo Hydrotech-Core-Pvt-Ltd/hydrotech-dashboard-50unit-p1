@@ -1,18 +1,16 @@
 import { User, Shield, Bell } from "lucide-react";
 
 export default function Settings({ user }) {
-  const dummy = {
-    email: user?.email || "user@example.com",
-    role: user?.role || "resident",
-    notifications: true,
-  };
+  const email = user?.email || "";
+  const role = user?.role || "";
+  const notifications = true;
 
   return (
     <div>
       <div className="flex items-center justify-between mb-6">
         <div>
           <h1 className="text-3xl font-bold text-white">Settings</h1>
-          <p className="text-gray-400 text-sm">Account and application settings (dummy)</p>
+          <p className="text-gray-400 text-sm">Account and application settings</p>
         </div>
       </div>
 
@@ -22,8 +20,8 @@ export default function Settings({ user }) {
             <User className="text-cyan-300" />
           </div>
           <div>
-            <p className="text-white font-semibold">{dummy.email}</p>
-            <p className="text-xs text-gray-400">Role: {dummy.role}</p>
+            <p className="text-white font-semibold">{email || "No email available"}</p>
+            <p className="text-xs text-gray-400">Role: {role || "unassigned"}</p>
           </div>
         </div>
 
@@ -37,8 +35,8 @@ export default function Settings({ user }) {
               </div>
             </div>
             <label className="swap">
-              <input type="checkbox" defaultChecked={dummy.notifications} />
-              <span className="ml-2 text-sm text-gray-300">{dummy.notifications ? 'On' : 'Off'}</span>
+              <input type="checkbox" defaultChecked={notifications} />
+              <span className="ml-2 text-sm text-gray-300">{notifications ? 'On' : 'Off'}</span>
             </label>
           </div>
 

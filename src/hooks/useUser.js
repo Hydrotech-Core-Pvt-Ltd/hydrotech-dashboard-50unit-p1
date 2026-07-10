@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
-import { doc, onSnapshot } from "firebase/firestore";
-import { db } from "../config/firebase";
+import { ref as dbRef, onValue } from "firebase/database";
+import { realtimeDb } from "../config/firebase";
 
 export default function useUser(uid) {
   const [user, setUser] = useState(null);
@@ -9,25 +9,30 @@ export default function useUser(uid) {
 
   useEffect(() => {
     if (!uid) {
+      setUser(null);
       setLoading(false);
       return;
     }
 
-    const userRef = doc(db, "users", uid);
-    const unsubscribe = onSnapshot(userRef, (doc) => {
-      if (doc.exists()) {
-        setUser({ id: doc.id, ...doc.data() });
-      } else {
-        setUser(null);
+    const userRef = dbRef(realtimeDb, `users/${uid}`);
+    const unsubscribe = onValue(
+      userRef,
+      (snapshot) => {
+        if (snapshot.exists()) {
+          setUser({ uid: snapshot.key, ...snapshot.val() });
+        } else {
+          setUser(null);
+        }
+        setLoading(false);
+      },
+      (error) => {
+        console.error("Error fetching user:", error);
+        setError(error);
+        setLoading(false);
       }
-      setLoading(false);
-    }, (error) => {
-      console.error("Error fetching user:", error);
-      setError(error);
-      setLoading(false);
-    });
+    );
 
-    return unsubscribe;
+    return () => unsubscribe();
   }, [uid]);
 
   return { user, loading, error };

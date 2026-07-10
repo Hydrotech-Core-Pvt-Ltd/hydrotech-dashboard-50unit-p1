@@ -1,6 +1,9 @@
 export default function WaveSparkline({ data = [], className = "w-full h-16", height = 40 }) {
-  // Fallback demo data if Firebase hasn't sent history yet
-  const values = data.length ? data : [8.5, 9.2, 7.8, 10.1, 8.9, 11.3, 9.5, 10.8, 8.2, 9.6];
+  const values = data.length ? data : [];
+
+  if (!values.length) {
+    return <svg viewBox={`0 0 100 ${height}`} className={className} preserveAspectRatio="none" />;
+  }
 
   const max = Math.max(...values);
   const min = Math.min(...values);

@@ -1,7 +1,7 @@
 import Sidebar from "../components/Sidebar";
 import CombinedMeterCard from "../components/CombinedMeterCard";
 import useMeters from "../hooks/useMeters";
-import useUser from "../hooks/useUser";
+import { ROLE_MAP } from "../config/roles";
 import { Search, Droplets, AlertTriangle, Wifi } from "lucide-react";
 import { useState } from "react";
 import { auth } from "../config/firebase";
@@ -9,62 +9,53 @@ import Analytics from "./Analytics";
 import Devices from "./Devices";
 import Settings from "./Settings";
 
-export default function Dashboard({ uid }) {
+export default function Dashboard({ authUser }) {
   const [activeIndex, setActiveIndex] = useState(0);
   const allMeters = useMeters();
-  const { user, loading: userLoading } = useUser(uid);
   const [searchQuery, setSearchQuery] = useState("");
 
-  // Show all meters only for admins (case-insensitive). For other users,
-  // try to detect their unit id from several possible fields and filter meters.
-  let meters = allMeters;
-  const role = (user?.role || "").toString().toLowerCase();
-  if (role !== "admin" && user) {
-    // Try multiple user fields that might contain unit information
-    const possibleUnit = (
-      user.unitId || user.unit || user.unitNumber || user.unit_number || user.apartment || ""
-    ).toString().trim();
+  const roleConfig = ROLE_MAP[authUser?.uid] ?? null;
+  const role = (roleConfig?.role || "").toString().toLowerCase();
+  const user = authUser ? { ...authUser, ...roleConfig } : roleConfig;
+  const isAdmin = role === "admin";
+  const isResident = role === "resident";
+  const hasAccess = Boolean(roleConfig) && (isAdmin || isResident);
 
-    const userUnit = possibleUnit;
-    const normalize = (s = "") => s.toString().toLowerCase().replace(/[^a-z0-9]/g, "");
-    const numeric = (s = "") => s.toString().replace(/[^0-9]/g, "");
+  const visibleMeters = isAdmin
+    ? allMeters
+    : isResident
+      ? allMeters.slice(0, 1)
+      : [];
 
-    if (userUnit) {
-      const nUser = normalize(userUnit);
-      const numUser = numeric(userUnit);
-      meters = allMeters.filter((m) => {
-        const apt = (m.Apartment || "").toString();
-        const mid = (m.Meter_ID || "").toString();
-        const nApt = normalize(apt);
-        const nMid = normalize(mid);
-        const numApt = numeric(apt);
-        const numMid = numeric(mid);
+  const filteredMeters = isAdmin
+    ? visibleMeters.filter((meter) =>
+        meter.Meter_ID?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        meter.Apartment?.toLowerCase().includes(searchQuery.toLowerCase())
+      )
+    : visibleMeters;
 
-        // Exact normalized match for meter id (covers '#M-102' vs 'M-102')
-        if (nMid && nMid === nUser) return true;
-        // Numeric match: user '102' matches 'Apt 102' or meter id 'M-102'
-        if (numUser && (numUser === numApt || numUser === numMid)) return true;
-        // Fallback: substring match on normalized strings
-        if (nMid.includes(nUser) || nApt.includes(nUser)) return true;
-        return false;
-      });
-    } else {
-      // No unit info found on user; default to empty list for safety
-      meters = [];
-    }
-  }
-
-  // Filter meters based on search
-  const filteredMeters = meters.filter(m => 
-    m.Meter_ID?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    m.Apartment?.toLowerCase().includes(searchQuery.toLowerCase())
-  );
-
-  // Loading state
-  if (userLoading) {
+  if (!hasAccess) {
     return (
-      <div className="min-h-screen bg-[#0a1628] flex items-center justify-center">
-        <div className="text-white text-xl">Loading...</div>
+      <div className="min-h-screen bg-[#0a1628] flex items-center justify-center px-6">
+        <div className="max-w-md w-full rounded-2xl border border-white/10 bg-[#0f1e36]/50 p-8 text-center">
+          <h1 className="text-2xl font-bold text-white mb-3">No access configured</h1>
+          <p className="text-gray-400 text-sm mb-6">
+            This authenticated account is not configured for dashboard access.
+          </p>
+          <button
+            type="button"
+            onClick={async () => {
+              try {
+                await auth.signOut();
+              } catch (error) {
+                console.error("Logout error:", error);
+              }
+            }}
+            className="w-full bg-gradient-to-r from-cyan-500 to-cyan-600 hover:from-cyan-600 hover:to-cyan-700 text-white font-semibold py-3 rounded-xl transition-all duration-200"
+          >
+            Sign out
+          </button>
+        </div>
       </div>
     );
   }
@@ -88,18 +79,18 @@ export default function Dashboard({ uid }) {
             <div className="flex justify-between items-start mb-8">
               <div>
                 <h1 className="text-4xl font-bold text-white mb-2">
-                  {user?.role === "resident" ? `Unit ${user?.unitId?.split(" ")[1]}` : "Dashboard"}
+                  {isResident ? "Resident Dashboard" : "Dashboard"}
                 </h1>
                 <p className="text-gray-400 text-sm">
-                  {user?.role === "resident" 
-                    ? "Your water meter consumption & status"
-                    : `Overview of ${meters.length} active IoT water meters`
+                  {isResident
+                    ? "Your assigned water meter consumption & status"
+                    : `Overview of ${filteredMeters.length} active IoT water meters`
                   }
                 </p>
               </div>
               
               {/* Search Bar - Only for Admin */}
-              {user?.role === "admin" && (
+              {isAdmin && (
                 <div className="relative w-96">
                   <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-500" size={20} />
                   <input
@@ -116,7 +107,7 @@ export default function Dashboard({ uid }) {
             <div>
               <h2 className="text-xl font-semibold text-white mb-4">Meter Readings</h2>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-5xl">
-                {(filteredMeters.length ? filteredMeters : meters).map((m) => (
+                {filteredMeters.map((m) => (
                   <CombinedMeterCard key={m.id} meter={m} />
                 ))}
               </div>
@@ -125,7 +116,7 @@ export default function Dashboard({ uid }) {
         )}
 
         {activeIndex === 1 && <Analytics />}
-        {activeIndex === 2 && <Devices meters={meters} />}
+        {activeIndex === 2 && <Devices meters={filteredMeters} />}
         {activeIndex === 3 && <Settings user={user} />}
       </main>
     </div>
