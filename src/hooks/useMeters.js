@@ -48,6 +48,7 @@ export default function useMeters() {
             Meter_ID: meterRoot.serialNumber || data.serialNumber || key,
             Apartment: "",
             Status: (data.isActive ?? meterRoot.isActive ?? true) ? "normal" : "alert",
+            Valve_Status: data.Valve_Status ?? data.valve_status ?? meterRoot.Valve_Status ?? meterRoot.valve_status ?? "closed",
             Flow_Rate: flowSeries,
             Pressure: data.Pressure ?? meterRoot.Pressure ?? 0,
             Daily_Liters: data.Daily_Liters ?? meterRoot.Daily_Liters ?? 0,
