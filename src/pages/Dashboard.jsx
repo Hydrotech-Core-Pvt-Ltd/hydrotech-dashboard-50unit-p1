@@ -2,7 +2,7 @@ import Sidebar from "../components/Sidebar";
 import CombinedMeterCard from "../components/CombinedMeterCard";
 import useMeters from "../hooks/useMeters";
 import { ROLE_MAP } from "../config/roles";
-import { Search, Droplets, AlertTriangle, Wifi } from "lucide-react";
+import { Search, Droplets, AlertTriangle, Wifi, Menu } from "lucide-react";
 import { useState } from "react";
 import { auth } from "../config/firebase";
 import Analytics from "./Analytics";
@@ -13,6 +13,7 @@ export default function Dashboard({ authUser }) {
   const [activeIndex, setActiveIndex] = useState(0);
   const allMeters = useMeters();
   const [searchQuery, setSearchQuery] = useState("");
+  const [menuOpen, setMenuOpen] = useState(false);
 
   const roleConfig = ROLE_MAP[authUser?.uid] ?? null;
   const role = (roleConfig?.role || "").toString().toLowerCase();
@@ -69,16 +70,41 @@ export default function Dashboard({ authUser }) {
   };
 
   return (
-    <div className="flex h-screen bg-[#0a1628]">
-      <Sidebar user={user} onLogout={handleLogout} activeIndex={activeIndex} onNavigate={setActiveIndex} />
+    <div className="flex h-dvh bg-[#0a1628]">
+      <Sidebar
+        user={user}
+        onLogout={handleLogout}
+        activeIndex={activeIndex}
+        onNavigate={(index) => {
+          setActiveIndex(index);
+          setMenuOpen(false);
+        }}
+        open={menuOpen}
+        onClose={() => setMenuOpen(false)}
+      />
 
-      <main className="flex-1 p-8 overflow-y-auto">
+      <main className="flex-1 min-w-0 overflow-y-auto">
+        {/* Top bar - mobile only */}
+        <div className="sticky top-0 z-20 flex items-center gap-3 border-b border-white/10 bg-[#0a1628]/90 px-4 py-3 backdrop-blur lg:hidden">
+          <button
+            type="button"
+            onClick={() => setMenuOpen(true)}
+            className="h-10 w-10 rounded-xl border border-white/10 bg-white/5 flex items-center justify-center text-white/80"
+            aria-label="Open menu"
+          >
+            <Menu size={20} />
+          </button>
+          <Droplets className="text-cyan-300" size={20} />
+          <p className="font-semibold tracking-tight">HydroTech</p>
+        </div>
+
+        <div className="p-4 sm:p-6 lg:p-8">
         {activeIndex === 0 && (
           <>
             {/* Header */}
-            <div className="flex justify-between items-start mb-8">
+            <div className="flex flex-col gap-4 md:flex-row md:justify-between md:items-start mb-6 md:mb-8">
               <div>
-                <h1 className="text-4xl font-bold text-white mb-2">
+                <h1 className="text-3xl md:text-4xl font-bold text-white mb-2">
                   {isResident ? "Resident Dashboard" : "Dashboard"}
                 </h1>
                 <p className="text-gray-400 text-sm">
@@ -91,7 +117,7 @@ export default function Dashboard({ authUser }) {
               
               {/* Search Bar - Only for Admin */}
               {isAdmin && (
-                <div className="relative w-96">
+                <div className="relative w-full md:w-96">
                   <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-500" size={20} />
                   <input
                     type="text"
@@ -106,7 +132,7 @@ export default function Dashboard({ authUser }) {
 
             <div>
               <h2 className="text-xl font-semibold text-white mb-4">Meter Readings</h2>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-5xl">
+              <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 md:gap-6 max-w-5xl">
                 {filteredMeters.map((m) => (
                   <CombinedMeterCard key={m.id} meter={m} />
                 ))}
@@ -118,6 +144,7 @@ export default function Dashboard({ authUser }) {
         {activeIndex === 1 && <Analytics />}
         {activeIndex === 2 && <Devices meters={filteredMeters} />}
         {activeIndex === 3 && <Settings user={user} />}
+        </div>
       </main>
     </div>
   );

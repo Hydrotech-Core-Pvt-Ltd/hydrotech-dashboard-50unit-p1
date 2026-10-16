@@ -12,9 +12,9 @@ export default function Analytics() {
 
   return (
     <div>
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex flex-wrap items-center justify-between gap-3 mb-6">
         <div>
-          <h1 className="text-3xl font-bold text-white">Analytics</h1>
+          <h1 className="text-2xl md:text-3xl font-bold text-white">Analytics</h1>
           <p className="text-gray-400 text-sm">Simple usage stats and trends</p>
         </div>
         <div className="text-white/60 flex items-center gap-3">
@@ -29,10 +29,10 @@ export default function Analytics() {
             <p className="text-gray-400 text-sm">Monthly Consumption</p>
             <BarChart2 className="text-cyan-300" />
           </div>
-          <div className="flex gap-3 items-end">
+          <div className="flex gap-2 sm:gap-3 items-end">
             {monthly.map((m) => (
               <div key={m.month} className="flex flex-col items-center">
-                <div style={{ height: `${m.value / 6}px` }} className="w-8 bg-cyan-400 rounded-t-md"></div>
+                <div style={{ height: `${m.value / 6}px` }} className="w-6 sm:w-8 bg-cyan-400 rounded-t-md"></div>
                 <span className="text-xs text-gray-400 mt-2">{m.month}</span>
               </div>
             ))}

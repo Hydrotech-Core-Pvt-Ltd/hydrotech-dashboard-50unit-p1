@@ -9,9 +9,9 @@ export default function Devices({ meters = [] }) {
 
   return (
     <div>
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex flex-wrap items-center justify-between gap-3 mb-6">
         <div>
-          <h1 className="text-3xl font-bold text-white">Devices</h1>
+          <h1 className="text-2xl md:text-3xl font-bold text-white">Devices</h1>
           <p className="text-gray-400 text-sm">List of connected meters from RTDB</p>
         </div>
         <div className="text-white/60 flex items-center gap-3">

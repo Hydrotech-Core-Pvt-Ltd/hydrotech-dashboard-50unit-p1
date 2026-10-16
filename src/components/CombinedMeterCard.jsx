@@ -113,7 +113,7 @@ export default function CombinedMeterCard({ meter }) {
 
   return (
     <div className="relative overflow-hidden rounded-[2rem] p-[1px] bg-gradient-to-br from-cyan-400/40 via-slate-700/20 to-sky-500/35 shadow-[0_24px_70px_rgba(0,0,0,0.42)]">
-      <div className="relative overflow-hidden rounded-[2rem] bg-[radial-gradient(circle_at_top_right,_rgba(34,211,238,0.18),_transparent_28%),linear-gradient(145deg,_rgba(7,18,38,0.98),_rgba(11,28,49,0.96)_48%,_rgba(15,39,64,0.98))] p-6 border border-white/5">
+      <div className="relative overflow-hidden rounded-[2rem] bg-[radial-gradient(circle_at_top_right,_rgba(34,211,238,0.18),_transparent_28%),linear-gradient(145deg,_rgba(7,18,38,0.98),_rgba(11,28,49,0.96)_48%,_rgba(15,39,64,0.98))] p-4 sm:p-6 border border-white/5">
       <div className="absolute inset-0 pointer-events-none opacity-35">
         <div className="absolute -top-20 -right-20 h-56 w-56 rounded-full bg-cyan-500/20 blur-3xl" />
         <div className="absolute -bottom-24 -left-20 h-56 w-56 rounded-full bg-sky-500/12 blur-3xl" />
@@ -121,10 +121,10 @@ export default function CombinedMeterCard({ meter }) {
       </div>
 
       {/* Header */}
-      <div className="flex items-start justify-between gap-4 mb-4">
-        <div>
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between mb-4">
+        <div className="min-w-0">
           <div className="inline-flex items-center gap-3 mb-2">
-            <div className="h-12 w-12 flex items-center justify-center rounded-[1.1rem] bg-gradient-to-br from-cyan-400/18 to-sky-500/8 border border-cyan-300/15 shadow-[0_0_24px_rgba(34,211,238,0.18)] backdrop-blur">
+            <div className="h-12 w-12 shrink-0 flex items-center justify-center rounded-[1.1rem] bg-gradient-to-br from-cyan-400/18 to-sky-500/8 border border-cyan-300/15 shadow-[0_0_24px_rgba(34,211,238,0.18)] backdrop-blur">
               <Droplets className="text-cyan-200" size={20} />
             </div>
             <div>
@@ -132,15 +132,15 @@ export default function CombinedMeterCard({ meter }) {
               <div className="text-xl font-semibold text-white tracking-tight">{meter.serialNumber || meter.Meter_ID}</div>
             </div>
           </div>
-          <div className="text-sm text-gray-300 flex items-center gap-2"><Clock size={14} /> Updated {updated}</div>
+          <div className="text-sm text-gray-300 flex items-center gap-2"><Clock size={14} className="shrink-0" /> Updated {updated}</div>
         </div>
 
-        <div className="text-right flex flex-col items-end gap-3">
+        <div className="flex flex-col items-start gap-3 sm:items-end sm:text-right">
           <div className={`inline-flex items-center gap-2 px-3 py-1 rounded-full text-[11px] font-semibold uppercase tracking-[0.18em] ${isNormal ? 'bg-emerald-500/10 text-emerald-200 border border-emerald-400/20' : 'bg-rose-500/10 text-rose-200 border border-rose-400/20'}`}>
             {isNormal ? '● NORMAL' : '● ALERT'}
           </div>
           <div className="text-xs text-gray-400 uppercase tracking-[0.22em]">Valve Control</div>
-          <div className="flex items-center justify-end gap-3">
+          <div className="flex flex-wrap items-center gap-3 sm:justify-end">
             <div className={`inline-flex items-center gap-2 px-3 py-1 rounded-full text-[11px] font-semibold uppercase tracking-[0.18em] border ${
               isValveOpen
                 ? "bg-emerald-500/10 text-emerald-200 border-emerald-400/20"
@@ -180,28 +180,28 @@ export default function CombinedMeterCard({ meter }) {
           const totalStr = fmtNumber(totalM3, 5);
           return (
             <>
-                 <div className="relative h-36 md:h-44 rounded-[1.4rem] border border-white/8 bg-white/4 flex flex-col items-center justify-center gap-2 p-6 overflow-hidden backdrop-blur-sm">
+                 <div className="relative h-36 md:h-44 rounded-[1.4rem] border border-white/8 bg-white/4 flex flex-col items-center justify-center gap-2 p-4 sm:p-6 overflow-hidden backdrop-blur-sm">
                 <div className="absolute left-0 top-0 h-full w-1 bg-gradient-to-b from-cyan-300/80 via-cyan-400/30 to-transparent" />
                 <div className="text-[11px] uppercase font-semibold tracking-[0.28em] text-cyan-200/70 text-center">Flow Rate</div>
                 <div className={`${numSizeClass(flowStr)} font-semibold text-white w-full text-center leading-none`}>{flowStr}</div>
                 <div className="text-cyan-100/70 text-[11px] tracking-[0.22em]">L/MIN</div>
               </div>
 
-                 <div className="relative h-36 md:h-44 rounded-[1.4rem] border border-white/8 bg-white/4 flex flex-col items-center justify-center gap-2 p-6 overflow-hidden backdrop-blur-sm">
+                 <div className="relative h-36 md:h-44 rounded-[1.4rem] border border-white/8 bg-white/4 flex flex-col items-center justify-center gap-2 p-4 sm:p-6 overflow-hidden backdrop-blur-sm">
                 <div className="absolute left-0 top-0 h-full w-1 bg-gradient-to-b from-sky-300/80 via-sky-400/30 to-transparent" />
                 <div className="text-[11px] uppercase font-semibold tracking-[0.28em] text-sky-200/70 text-center">Pressure</div>
                 <div className={`${numSizeClass(pressureStr)} font-semibold text-white w-full text-center leading-none`}>{pressureStr}</div>
                 <div className="text-sky-100/70 text-[11px] tracking-[0.22em]">BAR</div>
               </div>
 
-                 <div className="relative h-36 md:h-44 rounded-[1.4rem] border border-white/8 bg-white/4 flex flex-col items-center justify-center gap-2 p-6 overflow-hidden backdrop-blur-sm">
+                 <div className="relative h-36 md:h-44 rounded-[1.4rem] border border-white/8 bg-white/4 flex flex-col items-center justify-center gap-2 p-4 sm:p-6 overflow-hidden backdrop-blur-sm">
                 <div className="absolute left-0 top-0 h-full w-1 bg-gradient-to-b from-emerald-300/80 via-emerald-400/30 to-transparent" />
                 <div className="text-[11px] uppercase font-semibold tracking-[0.28em] text-emerald-200/70 text-center">Daily Liters</div>
                 <div className={`${numSizeClass(dailyStr)} font-semibold text-emerald-200 w-full text-center leading-none`}>{dailyStr}</div>
                 <div className="text-emerald-100/70 text-[11px] tracking-[0.22em]">L</div>
               </div>
 
-                 <div className="relative h-36 md:h-44 rounded-[1.4rem] border border-white/8 bg-white/4 flex flex-col items-center justify-center gap-2 p-6 overflow-hidden backdrop-blur-sm">
+                 <div className="relative h-36 md:h-44 rounded-[1.4rem] border border-white/8 bg-white/4 flex flex-col items-center justify-center gap-2 p-4 sm:p-6 overflow-hidden backdrop-blur-sm">
                 <div className="absolute left-0 top-0 h-full w-1 bg-gradient-to-b from-violet-300/80 via-violet-400/30 to-transparent" />
                 <div className="text-[11px] uppercase font-semibold tracking-[0.28em] text-violet-200/70 text-center">Total M3</div>
                 <div className={`${numSizeClass(totalStr)} font-semibold text-white w-full text-center leading-none`}>{totalStr}</div>
@@ -220,14 +220,14 @@ export default function CombinedMeterCard({ meter }) {
 
         {hasHistory && (
           <>
-            <div className="flex items-center gap-3 mt-4">
+            <div className="flex flex-wrap items-center gap-3 mt-4">
               <button onClick={toggleExpanded} className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-indigo-500/15 hover:bg-indigo-500/25 text-indigo-100 text-sm border border-indigo-400/20">
                 {expanded ? 'Hide graphs' : 'View graphs'}
               </button>
               <button onClick={copyHistoryPath} className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-sky-500/15 hover:bg-sky-500/25 text-sky-100 text-sm border border-sky-400/20">
                 Copy history path
               </button>
-              {copied && <span className="ml-3 text-emerald-300 text-sm">Copied!</span>}
+              {copied && <span className="text-emerald-300 text-sm">Copied!</span>}
             </div>
 
             {expanded && (
@@ -253,7 +253,7 @@ export default function CombinedMeterCard({ meter }) {
         )}
 
         {!hasHistory && (
-          <div className="mt-3 flex items-center justify-between">
+          <div className="mt-3 flex flex-wrap items-center justify-between gap-3">
             <div>
               <button onClick={copyHistoryPath} className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-sky-500/15 hover:bg-sky-500/25 text-sky-100 text-sm border border-sky-400/20">
                 Copy history path

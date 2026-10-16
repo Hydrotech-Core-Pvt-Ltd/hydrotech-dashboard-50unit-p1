@@ -7,26 +7,26 @@ export default function Settings({ user }) {
 
   return (
     <div>
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex flex-wrap items-center justify-between gap-3 mb-6">
         <div>
-          <h1 className="text-3xl font-bold text-white">Settings</h1>
+          <h1 className="text-2xl md:text-3xl font-bold text-white">Settings</h1>
           <p className="text-gray-400 text-sm">Account and application settings</p>
         </div>
       </div>
 
-      <div className="bg-[#0f1e36]/40 rounded-2xl p-6 border border-white/10 max-w-xl">
+      <div className="bg-[#0f1e36]/40 rounded-2xl p-4 sm:p-6 border border-white/10 max-w-xl">
         <div className="flex items-center gap-4 mb-4">
-          <div className="h-10 w-10 rounded-lg bg-cyan-500/10 flex items-center justify-center">
+          <div className="h-10 w-10 shrink-0 rounded-lg bg-cyan-500/10 flex items-center justify-center">
             <User className="text-cyan-300" />
           </div>
-          <div>
-            <p className="text-white font-semibold">{email || "No email available"}</p>
+          <div className="min-w-0">
+            <p className="text-white font-semibold truncate">{email || "No email available"}</p>
             <p className="text-xs text-gray-400">Role: {role || "unassigned"}</p>
           </div>
         </div>
 
         <div className="space-y-4">
-          <div className="flex items-center justify-between">
+          <div className="flex items-center justify-between gap-4">
             <div className="flex items-center gap-3">
               <Bell className="text-white/70" />
               <div>
@@ -40,7 +40,7 @@ export default function Settings({ user }) {
             </label>
           </div>
 
-          <div className="flex items-center justify-between">
+          <div className="flex items-center justify-between gap-4">
             <div className="flex items-center gap-3">
               <Shield className="text-white/70" />
               <div>

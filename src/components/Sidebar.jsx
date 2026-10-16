@@ -1,4 +1,4 @@
-import { LayoutGrid, BarChart3, Monitor, Settings, User, Droplets, LogOut, Shield, Home } from "lucide-react";
+import { LayoutGrid, BarChart3, Monitor, Settings, User, Droplets, LogOut, Shield, Home, X } from "lucide-react";
 
 const nav = [
   { icon: LayoutGrid, label: "Dashboard" },
@@ -7,10 +7,22 @@ const nav = [
   { icon: Settings, label: "Settings" },
 ];
 
-export default function Sidebar({ user, onLogout, activeIndex = 0, onNavigate = () => {} }) {
+export default function Sidebar({ user, onLogout, activeIndex = 0, onNavigate = () => {}, open = false, onClose = () => {} }) {
 
   return (
-    <aside className="h-screen w-72 bg-linear-to-b from-[#0c1730] via-[#0b1428] to-[#0a1224] border-r border-white/10 px-6 py-7 flex flex-col">
+    <>
+    {/* Backdrop - mobile only */}
+    <div
+      onClick={onClose}
+      className={`fixed inset-0 z-30 bg-black/60 transition-opacity lg:hidden ${
+        open ? "opacity-100" : "pointer-events-none opacity-0"
+      }`}
+    />
+    <aside
+      className={`fixed inset-y-0 left-0 z-40 h-dvh w-72 max-w-[85vw] bg-linear-to-b from-[#0c1730] via-[#0b1428] to-[#0a1224] border-r border-white/10 px-6 py-7 flex flex-col transition-transform duration-200 lg:static lg:z-auto lg:translate-x-0 ${
+        open ? "translate-x-0" : "-translate-x-full"
+      }`}
+    >
       <div className="flex items-center gap-3 pb-6 border-b border-white/10">
         <div className="h-12 w-12 rounded-2xl bg-cyan-500/10 border border-cyan-400/20 flex items-center justify-center shadow-[0_0_18px_rgba(34,211,238,0.35)]">
           <Droplets className="text-cyan-300" size={24} />
@@ -18,6 +30,14 @@ export default function Sidebar({ user, onLogout, activeIndex = 0, onNavigate = 
         <div>
           <p className="text-lg font-semibold tracking-tight">HydroTech</p>
         </div>
+        <button
+          type="button"
+          onClick={onClose}
+          className="ml-auto h-10 w-10 rounded-xl flex items-center justify-center text-white/60 hover:text-white hover:bg-white/5 lg:hidden"
+          aria-label="Close menu"
+        >
+          <X size={20} />
+        </button>
       </div>
 
       <nav className="mt-6 flex-1">
@@ -43,8 +63,8 @@ export default function Sidebar({ user, onLogout, activeIndex = 0, onNavigate = 
 
       <div className="pt-6 border-t border-white/10">
         <div className="flex items-center justify-between gap-4 rounded-2xl border border-white/10 bg-white/5 px-4 py-3">
-          <div className="flex items-center gap-3">
-            <div className={`h-11 w-11 rounded-2xl flex items-center justify-center ${
+          <div className="flex items-center gap-3 min-w-0">
+            <div className={`h-11 w-11 shrink-0 rounded-2xl flex items-center justify-center ${
               user?.role === "admin" 
                 ? "bg-emerald-500/10 border border-emerald-400/20" 
                 : "bg-cyan-500/10 border border-cyan-400/20"
@@ -63,7 +83,7 @@ export default function Sidebar({ user, onLogout, activeIndex = 0, onNavigate = 
           <button
             type="button"
             onClick={onLogout}
-            className="h-10 w-10 rounded-xl border border-white/10 bg-white/5 flex items-center justify-center text-white/60 hover:text-white hover:bg-red-500/20 hover:border-red-400/20 transition-all"
+            className="h-10 w-10 shrink-0 rounded-xl border border-white/10 bg-white/5 flex items-center justify-center text-white/60 hover:text-white hover:bg-red-500/20 hover:border-red-400/20 transition-all"
             title="Logout"
           >
             <LogOut size={18} />
@@ -71,5 +91,6 @@ export default function Sidebar({ user, onLogout, activeIndex = 0, onNavigate = 
         </div>
       </div>
     </aside>
+    </>
   );
 }
